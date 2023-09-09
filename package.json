@@ -11,5 +11,8 @@
     "url": "git+https://github.com/davender-singh1/fragments.git"
   },
   "author": "Davender Singh",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "3.0.3"
+  }
 }
