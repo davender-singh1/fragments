@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const passport = require('passport'); // New requirement
 
 // author and version from our package.json file
 const { author, version } = require('../package.json');
@@ -11,6 +12,7 @@ const pino = require('pino-http')({
   // Use our default logger instance, which is already configured
   logger,
 });
+const authenticate = require('./auth'); // New requirement
 
 // Create an express app instance we can use to attach middleware and HTTP routes
 const app = express();
@@ -27,8 +29,14 @@ app.use(cors());
 // Use gzip/deflate compression middleware
 app.use(compression());
 
-// Define a simple health check route. If the server is running
-// we'll respond with a 200 OK.  If not, the server isn't healthy.
+// Set up our passport authentication middleware
+passport.use(authenticate.strategy());
+app.use(passport.initialize());
+
+// Define our routes
+app.use('/', require('./routes'));
+
+// Health check route
 app.use('/', (req, res) => {
   // Clients shouldn't cache this response (always request it fresh)
   // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#controlling_caching
