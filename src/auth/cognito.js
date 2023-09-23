@@ -1,5 +1,3 @@
-// src/auth.js
-
 // Configure a JWT token strategy for Passport based on
 // Identity Token provided by Cognito. The token will be
 // parsed from the Authorization header (i.e., Bearer Token).
@@ -10,6 +8,9 @@ const { CognitoJwtVerifier } = require('aws-jwt-verify');
 
 const logger = require('./logger');
 
+if (!(process.env.AWS_COGNITO_POOL_ID && process.env.AWS_COGNITO_CLIENT_ID)) {
+  throw new Error('missing expected env vars: AWS_COGNITO_POOL_ID, AWS_COGNITO_CLIENT_ID');
+}
 // Create a Cognito JWT Verifier, which will confirm that any JWT we
 // get from a user is valid and something we can trust. See:
 // https://github.com/awslabs/aws-jwt-verify#cognitojwtverifier-verify-parameters
