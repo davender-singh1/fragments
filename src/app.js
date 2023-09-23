@@ -38,6 +38,7 @@ app.get('/health', (req, res) => {
 
 // 404 middleware should come before the general error handler,
 // so it can handle any requests that haven't been handled by earlier routes or middlewares.
+// eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
   console.log('Inside 404 middleware');
   res.status(404).json({
@@ -50,6 +51,7 @@ app.use((req, res, next) => {
 });
 
 // General error handler should come after the 404 middleware
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || 'unable to process request';
