@@ -11,6 +11,7 @@ const pino = require('pino-http')({
   logger,
 });
 const authenticate = require('./auth');
+const { createErrorResponse } = require('./response');
 
 const app = express();
 
@@ -60,13 +61,7 @@ app.use((err, req, res, next) => {
     logger.error({ err }, `Error processing request`);
   }
 
-  res.status(status).json({
-    status: 'error',
-    error: {
-      message,
-      code: status,
-    },
-  });
+  res.status(status).json(createErrorResponse(message, status));
 });
 
 module.exports = app;
