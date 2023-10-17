@@ -18,12 +18,17 @@ const app = express();
 
 app.use(pino);
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:1234', // or your frontend's origin
+    credentials: true,
+  })
+);
 app.use(compression());
-app.use(fragmentsRoute);
 
 passport.use(authenticate.strategy());
 app.use(passport.initialize());
+app.use(fragmentsRoute);
 
 // Define specific routes first
 app.use('/', require('./routes'));

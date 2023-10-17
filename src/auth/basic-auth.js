@@ -17,6 +17,7 @@ module.exports.strategy = () =>
   // username/password pair in the Authorization header.
   authPassport(
     auth.basic({
+      realm: 'Davender Singh',
       file: process.env.HTPASSWD_FILE,
     })
   );

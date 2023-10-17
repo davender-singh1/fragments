@@ -1,0 +1,12 @@
+.github/
+.vscode/
+coverage/
+node_modules/
+.env
+tests/
+!tests/.htpasswd
+.eslintrc.js
+.git/
+.gitignore
+.prettier*
+jest*

@@ -3,20 +3,22 @@ const pino = require('pino');
 // Use `info` as our standard log level if not specified
 const logLevel = process.env.LOG_LEVEL || 'info';
 
-// Configuration for pretty-printing logs
-const prettyPrintConfig = {
-  colorize: true,
-  translateTime: 'SYS:standard',
-  ignore: 'pid,hostname',
-};
-
-// Setup options for Pino logger
-const options = {
+// Define the options object
+let options = {
   level: logLevel,
-  prettyPrint: logLevel === 'debug' ? prettyPrintConfig : false,
 };
 
-// Create and export a Pino Logger instance
-const logger = pino(options);
+// If we're doing `debug` logging, make the logs easier to read
+if (options.level === 'debug') {
+  // https://github.com/pinojs/pino-pretty
+  options.transport = {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+    },
+  };
+}
 
-module.exports = logger;
+// Create and export a Pino Logger instance:
+// https://getpino.io/#/docs/api?id=logger
+module.exports = pino(options);
