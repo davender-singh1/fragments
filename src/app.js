@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const passport = require('passport');
-const fragmentsRoute = require('./routes/fragmentsRoute');
+const fragmentsRoute = require('./routes/api/post');
 
 const { author, version } = require('../package.json');
 

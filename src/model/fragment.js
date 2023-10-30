@@ -42,7 +42,13 @@ class Fragment {
   static async byUser(ownerId, expand = false) {
     const fragmentIds = await listFragments(ownerId);
     if (!expand) return fragmentIds;
-    return Promise.all(fragmentIds.map((id) => Fragment.byId(ownerId, id)));
+
+    const fragments = [];
+    for (const id of fragmentIds) {
+      const fragment = await Fragment.byId(ownerId, id);
+      fragments.push(fragment);
+    }
+    return fragments;
   }
 
   static async byId(ownerId, id) {

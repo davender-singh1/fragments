@@ -1,5 +1,5 @@
 const MemoryDB = require('./memory-db');
-const Fragment = require('../../fragment');
+//const Fragment = require('../../fragment');
 
 // Create two in-memory databases: one for fragment metadata and the other for raw data
 const data = new MemoryDB();
@@ -30,6 +30,7 @@ function readFragmentData(ownerId, id) {
 async function listFragments(ownerId, expand = false) {
   const fragments = await metadata.query(ownerId);
   if (expand) {
+    const Fragment = require('../../fragment');
     return fragments.map((frag) => new Fragment(frag));
   }
   // Return just the IDs if not expanding
