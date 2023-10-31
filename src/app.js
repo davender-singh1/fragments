@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const passport = require('passport');
-const fragmentsRoute = require('./routes/api/post');
+const postRoute = require('./routes/api/post');
 
 const { author, version } = require('../package.json');
 
@@ -28,7 +28,7 @@ app.use(compression());
 
 passport.use(authenticate.strategy());
 app.use(passport.initialize());
-app.use(fragmentsRoute);
+app.use('/v1', postRoute);
 
 // Define specific routes first
 app.use('/', require('./routes'));

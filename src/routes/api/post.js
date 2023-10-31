@@ -42,6 +42,7 @@ router.post('/fragments', rawBody(), async (req, res, next) => {
     res.status(201).json({ id: fragment.id, ownerId: fragment.ownerId });
   } catch (error) {
     logger.error('Error creating fragment:', error.message);
+    res.status(500).json({ error: error.message }); // Send the actual error message in the response
     next(error);
   }
 });
