@@ -21,7 +21,7 @@ RUN npm install
 
 # Copy all necessary files from your project into the Docker image
 COPY ./src ./src
-
+COPY ./tests/.htpasswd ./tests/.htpasswd
 # If there's a build script in your package.json, run it here
 # RUN npm run build
 
@@ -35,6 +35,7 @@ ENV PORT=8080
 
 # Copy from build stage
 COPY --from=build-stage /app-build /app
+COPY --from=build-stage /app-build/tests/.htpasswd /app/tests/.htpasswd
 
 # Expose the port the app runs on
 EXPOSE 8080
