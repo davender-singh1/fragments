@@ -3,7 +3,6 @@ const contentType = require('content-type');
 const Fragment = require('../../model/fragment');
 const logger = require('../../logger.js');
 const router = express.Router();
-
 const rawBody = () =>
   express.raw({
     inflate: true,
@@ -15,14 +14,12 @@ const rawBody = () =>
   });
 
 router.post('/fragments', rawBody(), async (req, res, next) => {
-  console.log('Inside POST /v1/fragments');
   try {
     if (!Buffer.isBuffer(req.body)) {
-      logger.warn('Invalid data format for POST request to /fragments.');
       return res.status(400).send('Invalid data format');
     }
 
-    const ownerId = req.user.id; // Assuming some authentication middleware set `req.user`
+    const ownerId = req.user.id;
     const fragment = new Fragment({
       ownerId: ownerId,
       type: req.headers['content-type'],
@@ -32,17 +29,18 @@ router.post('/fragments', rawBody(), async (req, res, next) => {
     await fragment.setData(req.body);
     await fragment.save();
 
-    const apiUrl = process.env.API_URL || `http://${req.headers.host}`;
+    const apiUrl = process.env.API_URL || `http://localhost:8080`;
 
-    // Log successful fragment creation
     logger.info('Fragment created successfully with ID:', fragment.id);
 
-    // When setting the Location header:
-    res.setHeader('Location', `${apiUrl}/path/to/fragment/${fragment.id}`);
-    res.status(201).json({ id: fragment.id, ownerId: fragment.ownerId });
+    res.setHeader('Location', `${apiUrl}/v1/fragments/${fragment.id}`);
+    res.status(201).json({
+      id: fragment.id,
+      ownerId: fragment.ownerId,
+    });
   } catch (error) {
     logger.error('Error creating fragment:', error.message);
-    res.status(500).json({ error: error.message }); // Send the actual error message in the response
+    res.status(500).json({ error: error.message });
     next(error);
   }
 });

@@ -1,47 +1,23 @@
 // src/routes/api/get.js
 const { createSuccessResponse, createErrorResponse } = require('../../response');
+const logger = require('../../logger');
+const Fragment = require('../../model/fragment');
 
-/**
- * Get a list of fragments for the current user
- */
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   try {
-    let responseData;
-
-    // Check if the expand query parameter is set to 1
     if (req.query.expand === '1') {
-      responseData = {
-        status: 'ok',
-        fragments: [
-          {
-            id: 1,
-            type: 'text/plain',
-            content: 'Sample fragment 1',
-            metadata: {
-              author: 'user1@email.com',
-              creationDate: '2023-01-01T12:00:00Z',
-            },
-          },
-          {
-            id: 2,
-            type: 'application/json',
-            content: '{"key": "value"}',
-            metadata: {
-              author: 'user1@email.com',
-              creationDate: '2023-02-01T12:00:00Z',
-            },
-          },
-        ],
-      };
-    } else {
-      responseData = {
-        status: 'ok',
-        fragments: [], // Placeholder. Replace with actual data for non-expanded view.
-      };
+      const fragments = await Fragment.byUser(req.user, true);
+      logger.debug({ fragments }, 'GET /fragments');
+      res.setHeader('Location', `${process.env.API_URL}/v1/fragments/${fragments.id}`);
+      res.status(200).json(createSuccessResponse({ fragments }));
+      return;
     }
-
-    res.status(200).json(createSuccessResponse(responseData));
+    const fragments = await Fragment.byUser(req.user);
+    logger.debug({ fragments }, 'GET /fragments');
+    res.setHeader('Location', `${process.env.API_URL}/v1/fragments/${fragments.id}`);
+    res.status(200).json(createSuccessResponse({ fragments }));
+    return;
   } catch (error) {
-    res.status(500).json(createErrorResponse('Internal server error', 500));
+    res.status(404).json(createErrorResponse(404, error.message));
   }
 };
