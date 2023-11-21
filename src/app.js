@@ -11,7 +11,7 @@ const logger = require('./logger');
 const pino = require('pino-http')({
   logger,
 });
-const authenticate = require('./auth');
+const authenticate = require('./auth/');
 const { createErrorResponse } = require('./response');
 
 const app = express();
