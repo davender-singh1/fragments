@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
     logger.debug({ fragment }, 'POST /fragments');
 
     res.location(`${API_URL}/v1/fragments/${fragment.id}`);
+    console.log('Location header set to:', res.get('Location'));
     res.status(201).json(createSuccessResponse({ fragment }));
   } catch (error) {
     res.status(500).json(createErrorResponse(500, error.message));
