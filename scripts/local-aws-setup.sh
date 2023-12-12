@@ -1,15 +1,27 @@
 #!/bin/sh
 set -x # Enable script debugging
+# Setup steps for working with LocalStack and DynamoDB local instead of AWS.
+# Assumes aws cli is installed and LocalStack and DynamoDB local are running.
 
-# Set AWS environment variables for LocalStack
+# Setup AWS environment variables
+echo "Setting AWS environment variables for LocalStack"
+
+echo "AWS_ACCESS_KEY_ID=test"
 export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_SESSION_TOKEN=test
-export AWS_DEFAULT_REGION=us-east-1
 
-# Wait for LocalStack to be ready
+echo "AWS_SECRET_ACCESS_KEY=test"
+export AWS_SECRET_ACCESS_KEY=test
+
+echo "AWS_SESSION_TOKEN=test"
+export AWS_SESSION_TOKEN=test
+
+export AWS_DEFAULT_REGION=us-east-1
+echo "AWS_DEFAULT_REGION=us-east-1"
+
+# Wait for LocalStack to be ready, by inspecting the response from /health, see:
+# https://github.com/localstack/localstack/issues/4904#issuecomment-966315170
 echo 'Waiting for LocalStack S3...'
-until (curl --silent http://localhost:4566/_localstack/health | grep "\"s3\": \"\(running\|available\)\"" > /dev/null); do
+until (curl --silent http://localhost:4566/health | grep "\"s3\": \"\(running\|available\)\"" > /dev/null); do
     sleep 5
 done
 echo 'LocalStack S3 Ready'

@@ -38,9 +38,9 @@ class MemoryDB {
     }
 
     const db = this.db;
-    if (!db[primaryKey]) {
-      db[primaryKey] = {};
-    }
+    // Make sure the `primaryKey` exists, or create
+    db[primaryKey] = db[primaryKey] || {};
+    // Add the `value` to the `secondaryKey`
     db[primaryKey][secondaryKey] = value;
     return Promise.resolve();
   }

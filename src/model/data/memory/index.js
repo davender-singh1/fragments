@@ -1,14 +1,12 @@
 const MemoryDB = require('./memory-db');
-//const Fragment = require('../../fragment');
 
 // Create two in-memory databases: one for fragment metadata and the other for raw data
 const data = new MemoryDB();
 const metadata = new MemoryDB();
 
 // Write a fragment's metadata to memory db. Returns a Promise
-function writeFragment(ownerId, fragment) {
-  console.log('Writing fragment with ownerId:', ownerId, 'and fragment ID:', fragment.id);
-  return metadata.put(ownerId, fragment.id, fragment); // Actually save the fragment metadata
+function writeFragment(fragment) {
+  return metadata.put(fragment.ownerId, fragment.id, fragment);
 }
 
 // Read a fragment's metadata from memory db. Returns a Promise
@@ -16,9 +14,9 @@ function readFragment(ownerId, id) {
   return metadata.get(ownerId, id);
 }
 
-// Write a fragment's data buffer to memory db. Returns a Promise
-function writeFragmentData(ownerId, id, buffer) {
-  return data.put(ownerId, id, buffer);
+// Write a fragment's data to memory db. Returns a Promise
+function writeFragmentData(ownerId, id, value) {
+  return data.put(ownerId, id, value);
 }
 
 // Read a fragment's data from memory db. Returns a Promise
@@ -29,20 +27,18 @@ function readFragmentData(ownerId, id) {
 // Get a list of fragment ids/objects for the given user from memory db. Returns a Promise
 async function listFragments(ownerId, expand = false) {
   const fragments = await metadata.query(ownerId);
-  if (expand) {
-    const Fragment = require('../../fragment');
-    return fragments.map((frag) => new Fragment(frag));
+
+  // If we don't get anything back, or are supposed to give expanded fragments, return
+  if (expand || !fragments) {
+    return fragments;
   }
-  // Return just the IDs if not expanding
+
+  // Otherwise, map to only send back the ids
   return fragments.map((fragment) => fragment.id);
 }
 
 // Delete a fragment's metadata and data from memory db. Returns a Promise
-async function deleteFragment(ownerId, id) {
-  const exists = await readFragment(ownerId, id);
-  if (!exists) {
-    throw new Error(`Fragment not found for ownerId=${ownerId} and id=${id}`);
-  }
+function deleteFragment(ownerId, id) {
   return Promise.all([
     // Delete metadata
     metadata.del(ownerId, id),

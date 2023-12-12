@@ -16,7 +16,6 @@ module.exports.createSuccessResponse = function (data) {
     ...data,
   };
 };
-
 /**
  * An error response looks like:
  *

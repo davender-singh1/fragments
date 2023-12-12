@@ -1,13 +1,12 @@
-// src/auth/basic-auth.js
+// src/authorization/basic-auth.js
 
 // Configure HTTP Basic Auth strategy for Passport, see:
 // https://github.com/http-auth/http-auth-passport
-const passport = require('passport');
+
 const auth = require('http-auth');
-
+// const passport = require('passport');
 const authPassport = require('http-auth-passport');
-
-const authorize = require('./auth-middleware');
+const authorize = require('./authorize-middleware');
 // We expect HTPASSWD_FILE to be defined.
 if (!process.env.HTPASSWD_FILE) {
   throw new Error('missing expected env var: HTPASSWD_FILE');
@@ -18,9 +17,8 @@ module.exports.strategy = () =>
   // username/password pair in the Authorization header.
   authPassport(
     auth.basic({
-      realm: 'Davender Singh',
       file: process.env.HTPASSWD_FILE,
     })
   );
 
-module.exports.authenticate = () => passport.authenticate('http', { session: false });
+module.exports.authenticate = () => authorize('http');

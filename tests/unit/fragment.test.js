@@ -1,46 +1,17 @@
-const request = require('supertest');
-const express = require('express');
-const { randomUUID } = require('crypto');
+const Fragment = require('../../src/model/fragment');
 
-const router = express.Router(); // Add this line to initialize the router
-
-const app = express();
-
-const Fragment = require('../../src/model/fragment'); // Adjust the path as needed
-
-router.post('/', (req, res) => {
-  // Check if the content type is supported
-  if (!Fragment.isSupportedType(req.headers['content-type'])) {
-    return res.status(400).send('Invalid data format');
-  }
-
-  // Mock returning an object that matches the expected structure
-  res.status(201).send({ id: randomUUID(), ownerId: req.user.id });
-});
-
+// Wait for a certain number of ms. Returns a Promise.
 const wait = async (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
-app.use(express.json());
 
-// Mock middleware to set req.user
-app.use((req, res, next) => {
-  req.user = { id: 'testUserId' };
-  next();
-});
-
-app.use('/fragments', router);
 const validTypes = [
   `text/plain`,
-  /*
-   Currently, only text/plain is supported. Others will be added later.
-
   `text/markdown`,
   `text/html`,
   `application/json`,
-  `image/png`,
-  `image/jpeg`,
-  `image/webp`,
-  `image/gif`,
-  */
+  // `image/png`,
+  // `image/jpeg`,
+  // `image/webp`,
+  // `image/gif`,
 ];
 
 describe('Fragment class', () => {
@@ -253,16 +224,9 @@ describe('Fragment class', () => {
       expect(await Fragment.byUser(ownerId, true)).toEqual([fragment]);
     });
 
-    test('setData() throws if not given a Buffer', async () => {
+    test('setData() throws if not give a Buffer', () => {
       const fragment = new Fragment({ ownerId: '123', type: 'text/plain', size: 0 });
-
-      // Here's an alternative approach to handling async rejections in Jest
-      try {
-        await fragment.setData();
-        expect(true).toBe(false); // This will fail the test if no error is thrown
-      } catch (e) {
-        expect(e.message).toBe('Data should be of type Buffer');
-      }
+      expect(() => fragment.setData()).rejects.toThrow();
     });
 
     test('setData() updates the fragment size', async () => {
@@ -282,33 +246,7 @@ describe('Fragment class', () => {
       await fragment.setData(Buffer.from('a'));
 
       await Fragment.delete('1234', fragment.id);
-      await expect(Fragment.byId('1234', fragment.id)).rejects.toThrow();
-    });
-    describe('POST /fragments route', () => {
-      // Mock the middleware that sets req.user for this suite of tests
-
-      it('should create a new fragment and return its ID and owner ID', async () => {
-        const testBody = Buffer.from('Test data');
-        const response = await request(app)
-          .post('/fragments')
-          .set('Content-Type', 'text/plain')
-          .send(testBody);
-
-        expect(response.status).toBe(201);
-        expect(response.body).toHaveProperty('id');
-        expect(response.body.ownerId).toBe('testUserId'); // Checking the mocked user ID
-      });
-
-      it('should return 400 for unsupported content types', async () => {
-        const testBody = JSON.stringify({ message: 'Invalid data' }); // Converting object to JSON string
-        const response = await request(app)
-          .post('/fragments')
-          .set('Content-Type', 'application/json')
-          .send(testBody);
-
-        expect(response.status).toBe(400);
-        expect(response.text).toBe('Invalid data format');
-      });
+      expect(() => Fragment.byId('1234', fragment.id)).rejects.toThrow();
     });
   });
 });

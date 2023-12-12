@@ -1,62 +1,35 @@
-const express = require('express');
-const contentType = require('content-type');
+const { createSuccessResponse, createErrorResponse } = require('../../response');
 const Fragment = require('../../model/fragment');
 const logger = require('../../logger');
-const router = express.Router();
+const API_URL = process.env.API_URL || 'http://localhost:8080';
 
-// Middleware to enforce raw body and check for supported content type
-const rawBodyMiddleware = express.raw({
-  inflate: true,
-  limit: '5mb',
-  type: (req) => {
-    try {
-      const { type } = contentType.parse(req);
-      if (!Fragment.isSupportedType(type)) {
-        return false;
-      }
-      return type;
-    } catch (error) {
-      return false;
-    }
-  },
-});
-
-router.post('/fragments', rawBodyMiddleware, async (req, res) => {
+// Support sending various Content-Types on the body up to 5M in size
+module.exports = async (req, res) => {
   try {
-    // Check if body is parsed as a buffer and is of a supported type
-    if (!Buffer.isBuffer(req.body) || !Fragment.isSupportedType(req.headers['content-type'])) {
-      return res.status(400).send('Invalid data format');
+    if (!Fragment.isSupportedType(req.headers['content-type'])) {
+      return res.status(415).json(createErrorResponse(415, 'type is not supported!'));
     }
 
-    // Check if user is authenticated
-    if (!req.user || !req.user.id) {
-      logger.error('Authentication failed: req.user or req.user.id is not set');
-      return res.status(401).send('Authentication required');
-    }
-
-    const ownerId = req.user.id;
     const fragment = new Fragment({
-      ownerId: ownerId,
+      ownerId: req.user,
       type: req.headers['content-type'],
-      size: req.body.length,
+      size: Buffer.byteLength(req.body),
+      created: new Date(),
+      updated: new Date(),
     });
 
-    // Save the fragment data
-    await fragment.setData(req.body);
+    logger.debug('Saving fragment...');
     await fragment.save();
+    logger.debug('Fragment saved.');
+    logger.debug('Setting fragment data...');
+    await fragment.setData(req.body);
+    logger.debug('Fragment data set.');
 
-    const apiUrl = process.env.API_URL || 'http://localhost:8080';
-    logger.info(`Fragment created successfully with ID: ${fragment.id}`);
+    logger.debug({ fragment }, 'POST /fragments');
 
-    res.setHeader('Location', `${apiUrl}/v1/fragments/${fragment.id}`);
-    res.status(201).json({
-      id: fragment.id,
-      ownerId: fragment.ownerId,
-    });
+    res.location(`${API_URL}/v1/fragments/${fragment.id}`);
+    res.status(201).json(createSuccessResponse({ fragment }));
   } catch (error) {
-    logger.error(`Error creating fragment: ${error.message}`);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(createErrorResponse(500, error.message));
   }
-});
-
-module.exports = router;
+};

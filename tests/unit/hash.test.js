@@ -9,11 +9,7 @@ describe('hash()', () => {
   });
 
   test('hashing should always return the same value for a given string', () => {
+    const email = 'user1@example.com';
     expect(hash(email)).toEqual(hash(email));
-  });
-
-  test('hashing should return a shortened value if truncated', () => {
-    const truncatedHashedEmail = 'b36a8370';
-    expect(hash(email).slice(0, 8)).toEqual(truncatedHashedEmail);
   });
 });

@@ -1,74 +1,62 @@
+// src/app.js
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const passport = require('passport');
-const postRoute = require('./routes/api/post');
-
-const { author, version } = require('../package.json');
 
 const logger = require('./logger');
+const authenticate = require('./authorization');
+const createErrorResponse = require('./response').createErrorResponse;
 const pino = require('pino-http')({
+  // Use our default logger instance, which is already configured
   logger,
 });
-const authenticate = require('./auth/');
-const { createErrorResponse } = require('./response');
 
+// Create an express app instance we can use to attach middleware and HTTP routes
 const app = express();
 
+// Use logging middleware
 app.use(pino);
+
+// Use security middleware
 app.use(helmet());
-app.use(
-  cors({
-    origin: 'http://localhost:1234', // or your frontend's origin
-    credentials: true,
-  })
-);
+
+// Use CORS middleware so we can make requests across origins
+app.use(cors());
+
+// Use gzip/deflate compression middleware
 app.use(compression());
 
+// Set up our passport authentication middleware
 passport.use(authenticate.strategy());
 app.use(passport.initialize());
-app.use('/v1', postRoute);
 
-// Define specific routes first
+// Define our routes
 app.use('/', require('./routes'));
 
-// Health check route - should be defined specifically, not with a catch-all middleware
-app.get('/health', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache');
-  res.status(200).json({
-    status: 'ok',
-    author,
-    githubUrl: 'https://github.com/davender-singh1/fragments',
-    version,
-  });
+// Add 404 middleware to handle any requests for resources that can't be found
+app.use((req, res) => {
+  res.status(404).send(createErrorResponse(404, 'Not Found'));
 });
 
-// 404 middleware should come before the general error handler,
-// so it can handle any requests that haven't been handled by earlier routes or middlewares.
-// eslint-disable-next-line no-unused-vars
-app.use((req, res, next) => {
-  console.log('Inside 404 middleware');
-  res.status(404).json({
-    status: 'error',
-    error: {
-      message: 'not found',
-      code: 404,
-    },
-  });
-});
-
-// General error handler should come after the 404 middleware
+// Add error-handling middleware to deal with anything else
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
+  // We may already have an error response we can use, but if not, use a generic
+  // 500 server error and message.
   const status = err.status || 500;
   const message = err.message || 'unable to process request';
 
+  // If this is a server error, log something so we can see what's going on.
   if (status > 499) {
     logger.error({ err }, `Error processing request`);
   }
 
-  res.status(status).json(createErrorResponse(message, status));
+  // Send the error response
+  res.status(status).send(createErrorResponse(status, message));
 });
 
+// Export our `app` so we can access it in server.js
 module.exports = app;
