@@ -6,7 +6,7 @@ const request = require('supertest');
 const app = require('../../src/app');
 
 // Get the version and author from our package.json
-const { version, author } = require('../../package.json');
+const { version } = require('../../package.json');
 
 describe('/ health check', () => {
   test('should return HTTP 200 response', async () => {
