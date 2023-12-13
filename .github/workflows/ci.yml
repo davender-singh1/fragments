@@ -73,12 +73,18 @@ jobs:
         run: npm install
       - name: Build Containers
         run: docker compose up -d
+      - name: Wait for Fragments Service
+        run: |
+          wget -qO- https://raw.githubusercontent.com/eficode/wait-for/master/wait-for
+          chmod +x wait-for
+          ./wait-for fragments:8080 --timeout=30 -- echo "Fragments service is up"
+
       - name: Get Docker Containers Logs
         run: docker compose logs
-      - name: Setup Local AWS Resources
-        # NOTE: this file needs to be made executable *before* you check into git:
-        # $ chmod +x ./scripts/local-aws-setup.sh
+      - name: Make script executable
         run: chmod +x ./scripts/local-aws-setup.sh
+      - name: Setup Local AWS Resources
+        run: ./scripts/local-aws-setup.sh
       - name: Run Hurl Tests
         run: npm run test:integration
 
