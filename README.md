@@ -1,4 +1,5 @@
 # fragments
+Final presentation: https://youtu.be/YMkDX2SqOOg
 
 Lab 1
 This is a lab with various utility scripts for development and debugging.
